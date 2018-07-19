@@ -80,16 +80,19 @@ int main() {
             << endl;
           file << "--------------------------------------------------" << endl;
 
-          double hitpos[3];
-          approx_HitPosECAL2(gammas[0], hitpos);
-          histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
-          approx_HitPosECAL2(gammas[1], hitpos);
-          histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
+
+
+
+          // double hitpos[3];
+          // approx_HitPosECAL2(gammas[0], hitpos);
+          // histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
+          // approx_HitPosECAL2(gammas[1], hitpos);
+          // histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
 
           //cout <<  approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]) << '\n';
-          histo_2gamma_dist_ECAL2->Fill(approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]));
+          //histo_2gamma_dist_ECAL2->Fill(approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]));
 
-          if(i % 100 == 0)
+          if(i % 1000 == 0)
           cout << i << " Events analysiert" << '\n';
   }
 
