@@ -1,14 +1,9 @@
-
-
-// #include <functional>
 #include <iostream>
 #include <fstream>
-// #include <complex>
 #include <vector>
 #include <random>
-// #include <map>
-// #include <iomanip>
 
+#include "TString.h"
 #include "TH2D.h"
 #include "TH1D.h"
 #include <TFile.h>
@@ -43,8 +38,7 @@ int main() {
   histo_2gamma_dist_ECAL2 = new TH1D("2gamma_dist_ECAL2 [mm]","2gamma_dist_ECAL2 [mm]",1000,0,3500);
 
 
-  fstream file;
-  file.open("ascii_events", ios::out);
+
 
   std::random_device rd;
   std::mt19937 en(rd());
@@ -59,7 +53,12 @@ int main() {
                         sqrt( LAMBDA(s0,  PI_MASS_SQ, PROT_MASS_SQ)*
                               LAMBDA(s0, RHO_MASS_SQ, PROT_MASS_SQ));
 
-  const int Nevents = 1.2e3;
+for(int o = 1; o <= 1000 ; o++)
+{
+  fstream file;
+  file.open(TString::Format("ascii_events%d",o), ios::out);
+
+  const int Nevents = 10;
   for (int i = 0; i < Nevents; i++) {
           std::vector<double> piProt {0.0, 0.0, sqrt(E_BEAM*E_BEAM-PI_MASS_SQ), E_BEAM+PROT_MASS};
           auto rhoprot = Generator::decay_p(piProt,RHO_MASS,PROT_MASS, cosTh_from_t, dist_phi(en));
@@ -80,6 +79,8 @@ int main() {
             << endl;
           file << "--------------------------------------------------" << endl;
 
+          
+
 
 
 
@@ -92,11 +93,13 @@ int main() {
           //cout <<  approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]) << '\n';
           //histo_2gamma_dist_ECAL2->Fill(approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]));
 
-          if(i % 1000 == 0)
-          cout << i << " Events analysiert" << '\n';
+
   }
 
-        file.close();
+  file.close();
+}
+
+
         histo_2gamma_dist_ECAL2->Write();
         histo_xyHitsECAL2->Write();
         return 0.0;
