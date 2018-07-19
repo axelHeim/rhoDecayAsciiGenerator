@@ -10,6 +10,7 @@
 // #include <iomanip>
 
 #include "TH2D.h"
+#include "TH1D.h"
 #include <TFile.h>
 
 #define _USE_MATH_DEFINES
@@ -31,12 +32,16 @@ using namespace std;
 
 double invariantMass(std::vector<double>, std::vector<double>);
 void approx_HitPosECAL2(vector<double>, double hitpos[3]);
+double approx_distance_between2Gamma_ECAL2(vector<double>, vector<double>);
 
 int main() {
   TFile file1("Rho_gammas.root", "RECREATE");
   TH2D *histo_xyHitsECAL2;
   histo_xyHitsECAL2 = new TH2D("xyHitsECAL2", "xyHitsECAL2", 65, -1225.6,
            1263.9, 48, -919.2, 919.2);
+  TH1D *histo_2gamma_dist_ECAL2;
+  histo_2gamma_dist_ECAL2 = new TH1D("2gamma_dist_ECAL2 [mm]","2gamma_dist_ECAL2 [mm]",1000,0,3500);
+
 
   fstream file;
   file.open("ascii_events", ios::out);
@@ -47,14 +52,14 @@ int main() {
   std::uniform_real_distribution<> dist_phi(-M_PI, M_PI);
 
   double s0 = PI_MASS_SQ+PROT_MASS_SQ + 2*E_BEAM*PROT_MASS_SQ;
-  double t = -0.1;  // GeV^2
+  double t = -0.4;  // GeV^2
   double cosTh_from_t = (2*s0*(t-PI_MASS_SQ - RHO_MASS_SQ) +
                          (s0 + PI_MASS_SQ - PROT_MASS_SQ)*
                          (s0+ RHO_MASS_SQ - PROT_MASS_SQ) ) /
                         sqrt( LAMBDA(s0,  PI_MASS_SQ, PROT_MASS_SQ)*
                               LAMBDA(s0, RHO_MASS_SQ, PROT_MASS_SQ));
 
-  const int Nevents = 1e5;
+  const int Nevents = 1.2e3;
   for (int i = 0; i < Nevents; i++) {
           std::vector<double> piProt {0.0, 0.0, sqrt(E_BEAM*E_BEAM-PI_MASS_SQ), E_BEAM+PROT_MASS};
           auto rhoprot = Generator::decay_p(piProt,RHO_MASS,PROT_MASS, cosTh_from_t, dist_phi(en));
@@ -75,20 +80,72 @@ int main() {
             << endl;
           file << "--------------------------------------------------" << endl;
 
-          // double hitpos[3];
-          // approx_HitPosECAL2(gammas[0], hitpos);
-          // histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
-          // approx_HitPosECAL2(gammas[1], hitpos);
-          // histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
+          double hitpos[3];
+          approx_HitPosECAL2(gammas[0], hitpos);
+          histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
+          approx_HitPosECAL2(gammas[1], hitpos);
+          histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
 
-          if(i % 1000 == 0)
-          cout << i << " Events  analysiert" << '\n';
+          //cout <<  approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]) << '\n';
+          histo_2gamma_dist_ECAL2->Fill(approx_distance_between2Gamma_ECAL2(gammas[0], gammas[1]));
+
+          if(i % 100 == 0)
+          cout << i << " Events analysiert" << '\n';
   }
 
         file.close();
+        histo_2gamma_dist_ECAL2->Write();
         histo_xyHitsECAL2->Write();
         return 0.0;
 }
+
+double approx_distance_between2Gamma_ECAL2(vector<double> fourVec1, vector<double> fourVec2)
+{
+  double ECAL2_zPos = 33252; //ECAL2 z position in mm
+  double hitpos1[3];
+   hitpos1[0] = 0;
+   hitpos1[1] = 0;
+   hitpos1[2] = -30.0;  //approx. the primary vertex pos
+
+  double mom_absValue = sqrt(pow(fourVec1[0],2)+pow(fourVec1[1],2)+pow(fourVec1[2],2));
+
+  for(int j = 0; ; j++)
+  {
+    for(int i = 0; i<3; i++)
+    {
+       hitpos1[i] += 0.01 *  fourVec1[i]/mom_absValue;
+    }
+    if(fabs(hitpos1[2] - ECAL2_zPos) < 0.5)
+    {
+      //cout << "hier" << '\n';
+      break;}
+  }
+
+  double  hitpos2[3];
+    hitpos2[0] = 0;
+    hitpos2[1] = 0;
+    hitpos2[2] = -30.0;  //approx. the primary vertex pos
+
+  mom_absValue = sqrt(pow(fourVec2[0],2)+pow(fourVec2[1],2)+pow(fourVec2[2],2));
+
+  for(int j = 0; ; j++)
+  {
+    for(int i = 0; i<3; i++)
+    {
+        hitpos2[i] += 0.01 * fourVec2[i]/mom_absValue;
+    }
+    if(fabs(hitpos2[2] - ECAL2_zPos) < 0.5)
+    {
+      //cout << "hier" << '\n';
+      break;}
+  }
+
+  double distance = sqrt(pow(hitpos1[0] - hitpos2[0],2) +
+                        pow(hitpos1[1] - hitpos2[1],2));
+
+  return distance;
+}
+
 
 
 double invariantMass(std::vector<double> fourVec1, std::vector<double> fourVec2)
