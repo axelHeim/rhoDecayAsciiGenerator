@@ -89,9 +89,12 @@ for(int o = 1; o <= 1000 ; o++)
           TLorentzVector lv = v1+v2;
           double M = lv.M();
 
+
           histo_inv_MassPi0->Fill(M) << '\n';
 
 
+          TLorentzVector pi0Lorentz =  {pions[1][0],pions[1][1], pions[1][2], pions[1][3]};
+          cout << pi0Lorentz.M() << '\n';
           // double hitpos[3];
           // approx_HitPosECAL2(gammas[0], hitpos);
           // histo_xyHitsECAL2->Fill(hitpos[0], hitpos[1]);
