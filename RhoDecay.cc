@@ -8,6 +8,8 @@
 #include "TH1D.h"
 #include <TFile.h>
 
+#include "TLorentzVector.h"
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -25,7 +27,7 @@ using namespace std;
 #define RHO_MASS_SQ (RHO_MASS*RHO_MASS)
 #define PROT_MASS_SQ (PROT_MASS*PROT_MASS)
 
-double invariantMass(std::vector<double>, std::vector<double>);
+
 void approx_HitPosECAL2(vector<double>, double hitpos[3]);
 double approx_distance_between2Gamma_ECAL2(vector<double>, vector<double>);
 
@@ -36,6 +38,8 @@ int main() {
            1263.9, 48, -919.2, 919.2);
   TH1D *histo_2gamma_dist_ECAL2;
   histo_2gamma_dist_ECAL2 = new TH1D("2gamma_dist_ECAL2 [mm]","2gamma_dist_ECAL2 [mm]",1000,0,3500);
+  TH1D *histo_inv_MassPi0;
+  histo_inv_MassPi0 = new TH1D("histo_inv_MassPi0"," [mm]",50,0,0.5);
 
 
 
@@ -79,9 +83,13 @@ for(int o = 1; o <= 1000 ; o++)
             << endl;
           file << "--------------------------------------------------" << endl;
 
-          
 
+          TLorentzVector v1 =  {gammas[1][0],gammas[1][1], gammas[1][2], gammas[1][3]};
+          TLorentzVector v2 =  {gammas[0][0],gammas[0][1], gammas[0][2], gammas[0][3]};
+          TLorentzVector lv = v1+v2;
+          double M = lv.M();
 
+          histo_inv_MassPi0->Fill(M) << '\n';
 
 
           // double hitpos[3];
@@ -99,7 +107,7 @@ for(int o = 1; o <= 1000 ; o++)
   file.close();
 }
 
-
+        histo_inv_MassPi0->Write();
         histo_2gamma_dist_ECAL2->Write();
         histo_xyHitsECAL2->Write();
         return 0.0;
@@ -154,15 +162,6 @@ double approx_distance_between2Gamma_ECAL2(vector<double> fourVec1, vector<doubl
 
 
 
-double invariantMass(std::vector<double> fourVec1, std::vector<double> fourVec2)
-{
-  double invariant_mass = sqrt(pow(fourVec1[0] + fourVec2[0],2) +
-                              pow(fourVec1[1] + fourVec2[1],2)  +
-                              pow(fourVec1[2] + fourVec2[2],2)  +
-                              pow(fourVec1[3] + fourVec2[3],2));
-
-  return invariant_mass;
-}
 
 void approx_HitPosECAL2(vector<double> fourVec, double hitpos[3])
 {
